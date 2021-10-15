@@ -8,13 +8,18 @@ import java.util.Scanner;
  * @date 2021-10-09 12:01 p.m.
  * @project Assignment1_Chatroom
  * @discription
+ * Client is similar to ClientHandler. The main purpose is to register a client to the server via
+ * ClientHandler, and send and receive message via clientHandler.
  **/
 public class Client {
+
+    // member variables
     private Socket socket;
     private BufferedWriter bufferedWriter;
     private BufferedReader bufferedReader;
     private String userName;
 
+    // constructor initialize socket and userName and other variables
     public Client(Socket socket, String userName) {
         try {
             this.socket = socket;
@@ -26,12 +31,20 @@ public class Client {
         }
     }
 
+    /**
+     * member method
+     * send userName to clientHandler
+     * while the socket is connected, send message to clientHandler
+     */
     public void sendMessage() {
         try {
             bufferedWriter.write(userName);
             bufferedWriter.newLine();
             bufferedWriter.flush();
-            System.out.println("Hi! "+ userName + ", welcome to chatroom!~");
+            System.out.println("Hi! "+ userName + ", welcome~");
+
+            printHistoryMsg();
+
 
             Scanner scanner = new Scanner(System.in);
             while (socket.isConnected()) {
@@ -45,6 +58,36 @@ public class Client {
         }
     }
 
+    /**
+     * Print history message to a new client's terminal when the new client
+     * first sign in the chatroom
+     */
+    private void printHistoryMsg() {
+        FileInputStream fis = null;
+        try {
+            fis = new FileInputStream("history.txt");
+            byte[] bytes = new byte[1024];
+            int readCount = 0;
+            while ((readCount = fis.read(bytes)) != -1) {
+                System.out.println(new String(bytes, 0, readCount));
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            if (fis != null) {
+                try {
+                    fis.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
+
+    /**
+     * member method
+     * receive and read message sent from clientHandler, and print the message to terminal
+     */
     public void listeningForMessage() {
         new Thread(new Runnable() {
             @Override
@@ -63,6 +106,10 @@ public class Client {
         }).start();
     }
 
+    /**
+     * member method
+     * close
+     */
     private void closeEverything(Socket socket, BufferedReader bufferedReader, BufferedWriter bufferedWriter) {
         try {
             if (bufferedReader != null) {
@@ -79,13 +126,23 @@ public class Client {
         }
     }
 
-    public static void main(String[] args) throws IOException {
-        Scanner scanner = new Scanner(System.in);
-        System.out.println("Enter userName:");
-        String userName = scanner.nextLine();
-        Socket socket = new Socket("localhost", 8818);
-        Client client = new Client(socket, userName);
-        client.listeningForMessage();
-        client.sendMessage();
+    /**
+     * main method
+     */
+    public static void main(String[] args)  {
+
+        try {
+            Scanner scanner = new Scanner(System.in);
+            System.out.println("Enter userName:");
+            String userName = scanner.nextLine();
+            Socket socket = null;
+            socket = new Socket("localhost", 8818);
+            Client client = new Client(socket, userName);
+            client.listeningForMessage();
+            client.sendMessage();
+        } catch (IOException e) {
+            System.out.println("SERVER EXCEED MAXIMUM LOAD!...\n\n You cannot log in...");
+        }
+
     }
 }

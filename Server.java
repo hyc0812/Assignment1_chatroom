@@ -1,6 +1,4 @@
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.net.ServerSocket;
 import java.net.Socket;
 /**
@@ -16,30 +14,58 @@ import java.net.Socket;
  **/
 
 public class Server {
-    private final ServerSocket serverSocket;
-    //private final BufferedReader bufferedReader;
-    //private BufferedWriter bufferedWriter;
 
-    public Server(ServerSocket serverSocket) {
-        this.serverSocket = serverSocket;
-        //bufferedReader = new BufferedReader(new InputStreamReader(System.in));
+    // client number (Maximum number) final
+    public final int maximumClientNumber = 3;
+
+    private int currentClientNumber = 0;
+
+    public void addCurrentClientNumber(){
+        currentClientNumber++;
+    }
+    public void decCurrentClientNumber(){
+        currentClientNumber--;
     }
 
+    public int getCurrentClientNumber() {
+        return currentClientNumber;
+    }
+
+    // member variable
+    private final ServerSocket serverSocket;
+    // constructor to initialize object serverSocket
+    public Server(ServerSocket serverSocket) {
+        this.serverSocket = serverSocket;
+    }
+
+    /**
+     *member method: startServer()
+     * description:  create Thread object clientHandler to interact with multiple clients
+     */
     public void startServer() {
         try {
             while (!serverSocket.isClosed()) {
-                Socket socket = serverSocket.accept();
-                ClientHandler clientHandler = new ClientHandler(socket);
-                System.out.println("Client '" + clientHandler.getClientUsername() + "' has entered chat!~");
-                Thread thread = new Thread(clientHandler);
-                thread.start();
+                if (currentClientNumber < maximumClientNumber) {
+                    Socket socket = serverSocket.accept();
+                    ClientHandler clientHandler = new ClientHandler(socket);
+                    System.out.println("Connected Client:  " + clientHandler.getClientUsername());
+                    Thread thread = new Thread(clientHandler);
+                    thread.start();
+                    addCurrentClientNumber();
+                } else {
+                    System.out.println("SERVER REACH MAXIMUM LOAD ");
+                    break;
+                }
             }
         } catch (IOException e) {
             e.printStackTrace();
-
         }
     }
 
+    /**
+     * member method: closeServerSocket
+     * description: to close serverSocket
+     */
     public void closeServerSocket() {
         try {
             if (serverSocket != null) {
@@ -50,12 +76,20 @@ public class Server {
         }
     }
 
+    /**
+     *
+     * @param args default
+     * @throws IOException
+     * description: start the server, create port for client to connect, create clientHandlers
+     * to handle clients' affairs.Close server if necessary.
+     */
     public static void main(String[] args) throws IOException {
 
         ServerSocket serverSocket = new ServerSocket(8818);
         System.out.println("Server run successfully...\nWaiting for client..");
         Server server = new Server(serverSocket);
         server.startServer();
+        server.closeServerSocket();
     }
 }
 
@@ -63,12 +97,3 @@ public class Server {
 
 
 
-/*  if ("quit".equalsIgnoreCase(bufferedReader.readLine())){
-                        for (int i = 0; i < 10; i++) {
-        System.out.println("Server is closing...\\\r");
-        Thread.sleep(100);
-        System.out.println("Server is closing.../\r");
-        }
-        System.out.println("Server says Goodbye!");
-        closeServerSocket();
-        }*/
