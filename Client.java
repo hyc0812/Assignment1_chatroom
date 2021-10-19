@@ -10,6 +10,7 @@ import java.util.Scanner;
  * @discription
  * Client is similar to ClientHandler. The main purpose is to register a client to the server via
  * ClientHandler, and send and receive message via clientHandler.
+ * This version is defined as V1.0
  **/
 public class Client {
 
@@ -60,12 +61,13 @@ public class Client {
 
     /**
      * Print history message to a new client's terminal when the new client
-     * first sign in the chatroom
+     * first log in the chatroom
      */
     private void printHistoryMsg() {
         FileInputStream fis = null;
         try {
-            fis = new FileInputStream("history.txt");
+            //fis = new FileInputStream(dir);
+            fis = new FileInputStream(CurrentDir.getDir());
             byte[] bytes = new byte[1024];
             int readCount = 0;
             while ((readCount = fis.read(bytes)) != -1) {
@@ -128,6 +130,10 @@ public class Client {
 
     /**
      * main method
+     * The clients can register with their userName. If they can log in successfully,
+     * they will get history message and they can send message to other clients.
+     * If the client number exceed the maximum load, they will not be permitted to enter
+     * the chatroom.
      */
     public static void main(String[] args)  {
 
@@ -143,6 +149,7 @@ public class Client {
         } catch (IOException e) {
             System.out.println("SERVER EXCEED MAXIMUM LOAD!...\n\n You cannot log in...");
         }
+
 
     }
 }

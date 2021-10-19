@@ -1,7 +1,6 @@
 
 
 import java.io.*;
-import java.net.ServerSocket;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -11,10 +10,27 @@ import java.util.ArrayList;
  * @profile StuID:11279620 yoh534@usask.ca
  * @date 2021-10-09 12:01 p.m.
  * @project Assignment1_Chatroom
- * @discription
- * When socket is connected, clientHandlers will receive messages from clients
- * , and forward messages to aimed clients.
+ * @discription When socket is connected, clientHandlers will receive message from clients
+ * , and forward message to aimed clients.
  **/
+
+/**
+ * This class is simple, just to convey the current directory to other class
+ * Your first thing is to substitute my directory with your current directory.
+ */
+class CurrentDir {
+    // REMINDER!!
+    // need first to substitute dir with your own directory for the code
+    private static final String dir = "/home/yoh534/IdeaProjects/Assignment1_Chatroom/src/";
+    // constructor
+    public CurrentDir() {
+    }
+    // getter to get dir
+    public static String getDir() {
+        return dir + "history.txt";
+    }
+}
+
 
 public class ClientHandler implements Runnable {
 
@@ -28,7 +44,7 @@ public class ClientHandler implements Runnable {
     private String clientUsername;
 
     //convey currentClientNumber from class Server
-    private  Server server;
+    private Server server;
 
     public Server getServer() {
         return server;
@@ -43,6 +59,7 @@ public class ClientHandler implements Runnable {
      * Constructor: initialize socket, bufferedWriter, bufferedReader, use readLine()to acquire
      * client's name from terminal, and add these above to ArrayList ClientHandler
      * Server's terminal will announce a connection when a client input their name and 'enter'
+     *
      * @param socket Socket object
      */
     public ClientHandler(Socket socket) {
@@ -67,19 +84,19 @@ public class ClientHandler implements Runnable {
     @Override
     public void run() {
         String messageFromClient;
-       while (socket.isConnected()) {
-           try {
-               messageFromClient = bufferedReader.readLine();
-               broadcastMessage(messageFromClient);
-           } catch (IOException e) {
-               closeEverything(socket, bufferedReader, bufferedWriter);
-               broadcastMessage("SERVER: '" + clientUsername + "' has left");
-               // decrease the number of current client
-               // currently cannot decrease the number of client...
-               //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-               server.decCurrentClientNumber();
-               break;
-           }
+        while (socket.isConnected()) {
+            try {
+                messageFromClient = bufferedReader.readLine();
+                broadcastMessage(messageFromClient);
+            } catch (IOException e) {
+                closeEverything(socket, bufferedReader, bufferedWriter);
+                broadcastMessage("SERVER: '" + clientUsername + "' has left");
+                // decrease the number of current client
+                // currently cannot decrease the number of client...
+                //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                //server.decCurrentClientNumber();
+                break;
+            }
         }
     }
 
@@ -87,10 +104,10 @@ public class ClientHandler implements Runnable {
      * If the message received contains "@" in front of a username(with no blank),
      * send this message to the related user only; if the message received do not
      * contain "@", send message to all clients except the message sender.
+     *
      * @param messageToSend message from client
      */
     public void broadcastMessage(String messageToSend) {
-
         currentMsgToFile(messageToSend);
         for (ClientHandler clientHandler : clientHandlers) {
             try {
@@ -124,15 +141,18 @@ public class ClientHandler implements Runnable {
     /**
      * This method write current message sent by connected clients to a file named 'history.txt'.
      * and the content will be displayed will new client is connected.
+     *
      * @param messageToSend message that prepared to write into a file.
      */
     private void currentMsgToFile(String messageToSend) {
         messageToSend = messageToSend + "\n";
         FileOutputStream fos = null;
         try {
-            fos = new FileOutputStream("history.txt", true);
+            // file to store all message sent by clients
+            //fos = new FileOutputStream(dir, true);
+            fos = new FileOutputStream(CurrentDir.getDir(), true);
             byte[] bs = (messageToSend).getBytes(StandardCharsets.UTF_8);
-            if (!(messageToSend.contains("SERVER")|messageToSend.contains("@"))) {
+            if (!(messageToSend.contains("SERVER") | messageToSend.contains("@"))) {
                 fos.write(bs);
             }
             fos.flush();
@@ -148,6 +168,7 @@ public class ClientHandler implements Runnable {
             }
         }
     }
+//
 
     /**
      * Close socket and I/O stream method
@@ -175,4 +196,6 @@ public class ClientHandler implements Runnable {
     public void removeClientHandler() {
         clientHandlers.remove(this);
     }
+
+
 }

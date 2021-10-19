@@ -1,3 +1,5 @@
+import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -13,10 +15,11 @@ import java.net.Socket;
  *      3. Close Server if necessary;
  **/
 
+//
 public class Server {
 
     // client number (Maximum number) final
-    public final int maximumClientNumber = 3;
+    public final int maximumClientNumber = 10;
 
     private int currentClientNumber = 0;
 
@@ -34,6 +37,7 @@ public class Server {
     // member variable
     private final ServerSocket serverSocket;
     // constructor to initialize object serverSocket
+
     public Server(ServerSocket serverSocket) {
         this.serverSocket = serverSocket;
     }
@@ -77,6 +81,22 @@ public class Server {
     }
 
     /**
+     * The method is to clear all history message for current use.
+     */
+    public void clearHistoryMsg() {
+        try {
+            //File file = new File(dir);
+            File file = new File(CurrentDir.getDir());
+            FileWriter fileWriter = new FileWriter(file);
+            fileWriter.write("");
+            fileWriter.flush();
+            fileWriter.close();
+        } catch (IOException e) {
+            System.out.println("ERROR in Clear Msg!!");
+        }
+    }
+
+    /**
      *
      * @param args default
      * @throws IOException
@@ -88,7 +108,11 @@ public class Server {
         ServerSocket serverSocket = new ServerSocket(8818);
         System.out.println("Server run successfully...\nWaiting for client..");
         Server server = new Server(serverSocket);
+        // clear the history message in the "history.txt"
+        server.clearHistoryMsg();
+        // start server
         server.startServer();
+        // close server
         server.closeServerSocket();
     }
 }
